@@ -1,9 +1,10 @@
 -i https://pypi.douban.com/simple
 matplotlib
 
-torch==2.1.2
-
-torchvision==0.16.2
-torchaudio==2.1.2
+torch == 2.1.2
+torchvision == 0.16.2
+torchaudio == 2.1.2
+--index-url https://download.pytorch.org/whl/cu121
 
 h5py == 3.10.0
+torchsummary == 1.5.1
