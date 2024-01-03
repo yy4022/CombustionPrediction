@@ -1,9 +1,21 @@
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 import h5py
-from typing_extensions import List
+from torch.utils.data import Dataset
 
+
+# Define the class of Dataset
+class MyDataset(Dataset):
+    def __init__(self, img_data):
+        self.img_data = img_data
+        self.length = len(self.img_data)
+
+    def __len__(self):
+        return self.length
+
+    def __getitem__(self, index):
+        return self.img_data[index]
 
 def load_PIVdata(file_PIV: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
