@@ -46,19 +46,84 @@ normalized_PIV_y = min_max_scaler(cropped_PIV_y, min_PIV_y, max_PIV_y)
 normalized_PIV_z = min_max_scaler(cropped_PIV_z, min_PIV_z, max_PIV_z)
 
 # 4. split the dataset into [1, 2500] and [2501, 5000] to save
-np.save('data/unshuffled_numpy_data/IA_PIV_x_1to2500.npy', normalized_PIV_x[0:2500, :, :])
-np.save('data/unshuffled_numpy_data/IA_PIV_y_1to2500.npy', normalized_PIV_y[0:2500, :, :])
-np.save('data/unshuffled_numpy_data/IA_PIV_z_1to2500.npy', normalized_PIV_z[0:2500, :, :])
+np.save('data/unshuffled_numpy_data/IA_PIV_x_1.npy', normalized_PIV_x[0:2500, :, :])
+np.save('data/unshuffled_numpy_data/IA_PIV_y_1.npy', normalized_PIV_y[0:2500, :, :])
+np.save('data/unshuffled_numpy_data/IA_PIV_z_1.npy', normalized_PIV_z[0:2500, :, :])
 
-np.save('data/unshuffled_numpy_data/IA_PIV_x_2501to5000.npy', normalized_PIV_x[2500:5001, :, :])
-np.save('data/unshuffled_numpy_data/IA_PIV_y_2501to5000.npy', normalized_PIV_y[2500:5001, :, :])
-np.save('data/unshuffled_numpy_data/IA_PIV_z_2501to5000.npy', normalized_PIV_z[2500:5001, :, :])
+np.save('data/unshuffled_numpy_data/IA_PIV_x_2.npy', normalized_PIV_x[2500:5001, :, :])
+np.save('data/unshuffled_numpy_data/IA_PIV_y_2.npy', normalized_PIV_y[2500:5001, :, :])
+np.save('data/unshuffled_numpy_data/IA_PIV_z_2.npy', normalized_PIV_z[2500:5001, :, :])
 
 # PART 2. load and process the PLIF dataset. (normalize and crop)
+# 1. provide the basic information of the PLIF files
 files_PLIF = ['data/IA_PLIF_1to2500.mat',
               'data/IA_PLIF_2501to5000.mat']
+file_num = len(files_PLIF)
 
-dataset_PLIF, PLIF_x_points, PLIF_y_points = load_PLIFdata('data/IA_PLIF_1to2500.mat')
+# 2. use for loop to get the global extreme value
+for i in range(file_num):
+    # load the PLIF dataset
+    dataset_PLIF, PLIF_x_points, PLIF_y_points = load_PLIFdata(files_PLIF[i])
+
+    # crop the dataset
+    cropped_PLIF = crop_data(dataset_PLIF, PLIF_x_points, PLIF_y_points)
+
+    # get the global max and min value
+    min_PLIF, max_PLIF = get_min_max(cropped_PLIF)
+
+    # compare the min and max value with the saved one
+    # try to load the existing file
+    try:
+        # a) if the values have existed, compare and update the value
+        with open('data/dataset_information_PLIF.json', 'r') as file:
+            existing_data = json.load(file)
+
+        current_min_PLIF = existing_data['min_PLIF']
+        current_max_PLIF = existing_data['max_PLIF']
+
+        if current_min_PLIF > float(min_PLIF):
+            existing_data['min_PLIF'] = float(min_PLIF)
+        if current_max_PLIF < float(min_PLIF):
+            existing_data['max_PLIF'] = float(min_PLIF)
+
+    except FileNotFoundError:
+        # b) if the values have not existed, create a new one
+        existing_data = {}
+
+        # add new information to the file
+        new_data = {
+            'min_PLIF': float(min_PLIF),
+            'max_PLIF': float(max_PLIF),
+        }
+
+        existing_data.update(new_data)
+
+    # save the updated data information
+    with open('data/dataset_information_PLIF.json', 'w') as file:
+        json.dump(existing_data, file)
+
+
+# 3. process the PLIF datasets
+for i in range(file_num):
+    # load the PLIF dataset
+    dataset_PLIF, PLIF_x_points, PLIF_y_points = load_PLIFdata(files_PLIF[i])
+
+    # crop the dataset
+    cropped_PLIF = crop_data(dataset_PLIF, PLIF_x_points, PLIF_y_points)
+
+    # normalize the dataset
+    # 1. get the global min and max value
+    with open('data/dataset_information_PLIF.json', 'r') as file:
+        existing_data = json.load(file)
+
+    min_PLIF = np.float32(existing_data['min_PLIF'])
+    max_PLIF = np.float32(existing_data['max_PLIF'])
+
+    # normalize and discretize the datasets according to the min, max values
+    normalized_PLIF = min_max_scaler(cropped_PLIF, min_PLIF, max_PLIF)
+
+    # save this specified data
+    np.save(f'data/unshuffled_numpy_data/IA_PLIF_{i+1}.npy', normalized_PLIF)
 
 
 

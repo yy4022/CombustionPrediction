@@ -15,7 +15,7 @@ def load_PIVdata(file_PIV: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
             a numpy array represents the value of y range of PIV image.
     """
 
-    with h5py.File(file_PIV, 'r') as file:
+    with h5py.File(file_PIV, 'r', rdcc_nbytes=1024**3, rdcc_nslots=1) as file:
         """
         Get the PIV numpy array, note that:
             1 denotes the axial(x) velocity,
@@ -43,14 +43,14 @@ def load_PLIFdata(file_PLIF: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
             a numpy array represents the value of y range of PLIF image.
     """
 
-    with h5py.File(file_PLIF, 'r') as file:
-        # get the PLIF numpy array with the shape of (1689, 409, 658)
+    with h5py.File(file_PLIF, 'r', rdcc_nbytes=1024**3, rdcc_nslots=1) as file:
+        # get the PLIF numpy array
         dataset_PLIF = file['PLIF']['PLIFfield'][:]
 
-        # get the x range of PLIF image with (658, 1)
+        # get the x range of PLIF image
         PLIF_x = file['PLIF']['x'][:]
 
-        # get the y range of PLIF image with (409, 1)
+        # get the y range of PLIF image
         PLIF_y = file['PLIF']['y'][:]
 
     return dataset_PLIF, PLIF_x, PLIF_y
@@ -121,4 +121,5 @@ def min_max_scaler(data: np.ndarray, min_value: float, max_value: float) -> np.n
     """
 
     normalized_data = (data - min_value) / (max_value - min_value)
+    normalized_data = normalized_data.astype('float32')
     return normalized_data
