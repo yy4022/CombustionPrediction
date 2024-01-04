@@ -21,7 +21,7 @@ def train_epoch(encoder: nn.Module, decoder: nn.Module, device: torch.device, da
         # 1. pass the input images to the encoder model
         encoded_data = encoder(image_batch_in)
         # 2. pass the encoded data to the decoder model
-        predicted_data = encoder(encoded_data)
+        predicted_data = decoder(encoded_data)
 
         # compute the prediction loss
         loss = loss_fn(predicted_data, image_batch_out)
