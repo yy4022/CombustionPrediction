@@ -15,7 +15,7 @@ class Encoder(nn.Module):
         self.img_scale = img_scale
         self.current_size = ceil((((((img_scale - 5)/4 + 1) - 3)/2 + 1) - 2)/2 + 1)
 
-        # Convolutional section
+        # Convolutional section -- 3 layers
         self.encoder_cnn = nn.Sequential(
             # 1st Convolutional layer
             nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1, stride=1),
@@ -41,7 +41,7 @@ class Encoder(nn.Module):
             nn.LeakyReLU(negative_slope=0.3),
         )
 
-        # Linear section
+        # Linear section -- 3 layers
         self.encoder_lin = nn.Sequential(
             # 1st fully connected layer
             nn.Linear(in_features=128 * self.current_size * self.current_size,
@@ -71,7 +71,7 @@ class Decoder(nn.Module):
         self.img_scale = img_scale
         self.current_size = ceil((((((img_scale - 5) / 4 + 1) - 3) / 2 + 1) - 2) / 2 + 1)
 
-        # Linear section
+        # Linear section -- 3 layers
         self.decoder_lin = nn.Sequential(
             # 1st fully connected layer
             nn.Linear(in_features=100, out_features=128),
@@ -91,7 +91,7 @@ class Decoder(nn.Module):
         self.unflatten = nn.Unflatten(dim=1,
                                       unflattened_size=(32, self.current_size, self.current_size))
 
-        # Convolutional section
+        # Convolutional section -- 4 layers
         self.decoder_conv = nn.Sequential(
             # 1st Convolutional layer
             nn.Conv2d(in_channels=32, out_channels=128, kernel_size=2, stride=1, padding=1),

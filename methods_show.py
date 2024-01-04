@@ -31,7 +31,7 @@ def show_image(image_data: np.ndarray, xmin: float, xmax: float, ymin: float, ym
     plt.show()
 
 
-def show_loss(loss: Dict[str, List[float]], filename: str):
+def show_loss(loss: Dict[str, np.ndarray], filename: str):
 
     """
     Visualizes the training and validation loss over epochs.
