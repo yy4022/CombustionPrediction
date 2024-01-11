@@ -23,20 +23,20 @@ print(f"Selected device: {device}")
 
 # 1.2. define the parameters for training the model
 batch_size = 200
-EPOCHS = 10
+EPOCHS = 1000
 lr = 0.0001
 if_existing = False  # a flag recording if there is a set of existing model
 img_scale = 71
 latent_features = 100
 dataset_num = 2
-model_title = 'PIV-x'
+model_title = 'PIV-z'
 
 # 1.3. define the file list
-training_files = ['data/data4models/training_PIV_x_dataset1.pkl',
-                  'data/data4models/training_PIV_x_dataset2.pkl']
+training_files = ['data/data4models/training_PIV_z_dataset1.pkl',
+                  'data/data4models/training_PIV_z_dataset2.pkl']
 
-validation_files = ['data/data4models/validation_PIV_x_dataset1.pkl',
-                    'data/data4models/validation_PIV_x_dataset2.pkl']
+validation_files = ['data/data4models/validation_PIV_z_dataset1.pkl',
+                    'data/data4models/validation_PIV_z_dataset2.pkl']
 
 # PART 2: create the dataloader for training
 training_dataloader_list = []
