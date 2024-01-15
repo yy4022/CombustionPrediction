@@ -26,17 +26,17 @@ batch_size = 100
 EPOCHS = 1000
 lr = 0.0001
 if_existing = False  # a flag recording if there is a set of existing model
-img_scale = 373
+img_scale = 71
 latent_features = 100
 dataset_num = 2
-model_title = 'PLIF'
+model_title = 'PIV_x'
 
 # 1.3. define the file list
-training_files = ['data/data4models/training_PLIF_dataset1.pkl',
-                  'data/data4models/training_PLIF_dataset2.pkl']
+training_files = ['data/data4models/training_PIV_x_dataset1.pkl',
+                  'data/data4models/training_PIV_x_dataset2.pkl']
 
-validation_files = ['data/data4models/validation_PLIF_dataset1.pkl',
-                    'data/data4models/validation_PLIF_dataset2.pkl']
+validation_files = ['data/data4models/validation_PIV_x_dataset1.pkl',
+                    'data/data4models/validation_PIV_x_dataset2.pkl']
 
 # PART 2: create the dataloader for training
 training_dataloader_list = []
