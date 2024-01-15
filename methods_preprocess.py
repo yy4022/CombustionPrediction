@@ -2,6 +2,7 @@ from typing import Tuple, List
 
 import numpy as np
 import h5py
+import torch
 from torch.utils.data import Dataset
 
 
@@ -135,3 +136,66 @@ def min_max_scaler(data: np.ndarray, min_value: float, max_value: float) -> np.n
     normalized_data = (data - min_value) / (max_value - min_value)
     normalized_data = normalized_data.astype('float32')
     return normalized_data
+
+def split_dataset_overlap(my_dataset: torch.Tensor, n_step_in: int, n_step_out: int):
+
+    """
+    Split the given dataset into overlapping sequences of inputs and corresponding sequences of outputs.
+
+    :param my_dataset: a Tensor representing the dataset to be split into sequences.
+    :param n_step_in: an integer representing the number of time steps in each sequence.
+    :param n_step_out: an integer representing the number of time steps in each output sequence.
+    :return: Tuple[List[ndarray], List[ndarray]]: Returns two lists:
+        - The first list contains the sequences of inputs.
+        - The second list contains the corresponding sequences of outputs.
+    """
+
+    my_dataset = my_dataset.cpu().data.numpy()
+
+    sequence_in = []
+    sequence_out = []
+
+    for i in range(len(my_dataset)):
+        # find the end of sequence_in, sequence_out
+        in_end_ix = i + n_step_in
+        out_end_ix = in_end_ix + n_step_out
+
+        # check if the end of sequence_out beyond the dataset
+        if out_end_ix > len(my_dataset):
+            break
+
+        # gather input and output parts of the pattern
+        segment_in, segment_out = my_dataset[i:in_end_ix, :], my_dataset[in_end_ix:out_end_ix, :]
+        sequence_in.append(segment_in)
+        sequence_out.append(segment_out)
+
+    np.array(sequence_in)
+    np.array(sequence_out)
+    return sequence_in, sequence_out
+
+def split_dataset(my_dataset, n_steps_in, n_steps_out):
+
+    my_dataset = my_dataset.cpu().data.numpy()
+
+    sequence_in = []
+    sequence_out = []
+
+    for i in range(len(my_dataset)):
+        # find the end of sequence_in, sequence_out
+        in_end_ix = i * n_steps_in + n_steps_in
+        out_end_ix = in_end_ix + n_steps_out
+
+        # check if the end of sequence_out beyond the dataset
+        if out_end_ix > len(my_dataset):
+            break
+
+        # gather input and output parts of the pattern
+        segment_in, segment_out = my_dataset[i * n_steps_in:in_end_ix, :], my_dataset[in_end_ix:out_end_ix, :]
+        sequence_in.append(segment_in)
+        sequence_out.append(segment_out)
+
+    np.array(sequence_in)
+    np.array(sequence_out)
+    return sequence_in, sequence_out
+
+
