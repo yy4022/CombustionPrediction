@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from CAE.neural_net import Encoder, Decoder
+from CAE.neural_net2 import Encoder, Decoder
 from CAE.predict import predict
 from CAE.validate import validate_epoch
 from methods_show import show_difference, show_comparison
@@ -24,17 +24,17 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 print(f"Selected device: {device}")
 
 # 1.2. define the parameters and filenames
-batch_size = 100
+batch_size = 50
 dataset_num = 2
-img_scale = 71
+img_scale = 373
 specified_data = 200
-model_title = 'PIV-z'
+model_title = 'PLIF'
 
-testing_data_files = ['data/data4models/testing_PIV_z_data1.npy',
-                      'data/data4models/testing_PIV_z_data2.npy']
+testing_data_files = ['data/data4models/testing_PLIF_data1.npy',
+                      'data/data4models/testing_PLIF_data2.npy']
 
-testing_dataset_files = ['data/data4models/testing_PIV_z_dataset1.pkl',
-                         'data/data4models/testing_PIV_z_dataset2.pkl']
+testing_dataset_files = ['data/data4models/testing_PLIF_dataset1.pkl',
+                         'data/data4models/testing_PLIF_dataset2.pkl']
 
 # PART 2: load the existing model for showing results
 # 1. define the Encoder and Decoder model

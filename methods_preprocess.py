@@ -175,6 +175,17 @@ def split_dataset_overlap(my_dataset: torch.Tensor, n_step_in: int, n_step_out: 
 
 def split_dataset(my_dataset, n_steps_in, n_steps_out):
 
+    """
+        Split the given dataset into sequences of inputs and corresponding sequences of outputs.
+
+        :param my_dataset: a Tensor representing the dataset to be split into sequences.
+        :param n_step_in: an integer representing the number of time steps in each sequence.
+        :param n_step_out: an integer representing the number of time steps in each output sequence.
+        :return: Tuple[List[ndarray], List[ndarray]]: Returns two lists:
+            - The first list contains the sequences of inputs.
+            - The second list contains the corresponding sequences of outputs.
+        """
+
     my_dataset = my_dataset.cpu().data.numpy()
 
     sequence_in = []
