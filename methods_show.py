@@ -2,8 +2,14 @@ from typing import Dict, List
 
 import matplotlib
 import numpy as np
+import torch
 
 from matplotlib import pyplot as plt
+from torch import nn
+from torch.utils.data import DataLoader
+
+from CAE.predict import CAE_predict
+from methods_preprocess import MyDataset
 
 
 def show_image(image_data: np.ndarray, xmin: float, xmax: float, ymin: float, ymax: float, title: str):
@@ -44,6 +50,40 @@ def show_normalized_image(image_data: np.ndarray, vmin: float, vmax: float, titl
     cbar.ax.tick_params(labelsize=16)
 
     plt.show()
+
+def decode_results(decoder_PLIF: nn.Module, decoder_PIV_x: nn.Module, decoder_PIV_y: nn.Module,
+                   decoder_PIV_z: nn.Module, predicted_output: np.ndarray,
+                   features: int, batch_size: int, device: torch.device):
+
+    # split the predicted output
+    predicted_PLIF = predicted_output[:, 0:features]
+    predicted_PIV_x = predicted_output[:, features:2*features]
+    predicted_PIV_y = predicted_output[:, 2*features:3*features]
+    predicted_PIV_z = predicted_output[:, 3*features:4*features]
+
+    # create the dataloaders
+    predicted_PLIF_dataset = MyDataset(predicted_PLIF)
+    predicted_PIV_x_dataset = MyDataset(predicted_PIV_x)
+    predicted_PIV_y_dataset = MyDataset(predicted_PIV_y)
+    predicted_PIV_z_dataset = MyDataset(predicted_PIV_z)
+
+    predicted_PLIF_dataloader = DataLoader(dataset=predicted_PLIF_dataset, batch_size=batch_size, shuffle=False)
+    predicted_PIV_x_dataloader = DataLoader(dataset=predicted_PIV_x_dataset, batch_size=batch_size, shuffle=False)
+    predicted_PIV_y_dataloader = DataLoader(dataset=predicted_PIV_y_dataset, batch_size=batch_size, shuffle=False)
+    predicted_PIV_z_dataloader = DataLoader(dataset=predicted_PIV_z_dataset, batch_size=batch_size, shuffle=False)
+
+    # decode the predicted data
+    decoded_PLIF = CAE_predict(CAE_model=decoder_PLIF, device=device, dataloader_in=predicted_PLIF_dataloader)
+    decoded_PIV_x = CAE_predict(CAE_model=decoder_PIV_x, device=device, dataloader_in=predicted_PIV_x_dataloader)
+    decoded_PIV_y = CAE_predict(CAE_model=decoder_PIV_y, device=device, dataloader_in=predicted_PIV_y_dataloader)
+    decoded_PIV_z = CAE_predict(CAE_model=decoder_PIV_z, device=device, dataloader_in=predicted_PIV_z_dataloader)
+
+    decoded_PLIF = np.squeeze(decoded_PLIF.cpu().numpy())
+    decoded_PIV_x = np.squeeze(decoded_PIV_x.cpu().numpy())
+    decoded_PIV_y = np.squeeze(decoded_PIV_y.cpu().numpy())
+    decoded_PIV_z = np.squeeze(decoded_PIV_z.cpu().numpy())
+
+    return decoded_PLIF, decoded_PIV_x, decoded_PIV_y, decoded_PIV_z
 
 def show_comparison(original_data: np.ndarray, prediction_data: np.ndarray,
                     original_title: str, prediction_title: str,

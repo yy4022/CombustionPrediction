@@ -3,8 +3,13 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
+from CAE.predict import CAE_predict
+from LSTM.predict import predict_lstm
 from LSTM.validate import validate_epoch
 from methods_preprocess import MyDataset
+from methods_show import decode_results, show_comparison, show_difference
+
+# from methods_show import show_lstm_comparison, show_lstm_difference
 
 """
 This file is used for showing the results via the trained CAE and LSTM model.
@@ -32,8 +37,10 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 print(f"Selected device: {device}")
 
 # 1.2. define the parameters and filenames
-batch_size = 100
-specified_data = 200
+batch_size = 10
+specified_seq = 0
+specified_image = 4
+features = 100
 
 testing_in_file = 'data/data4LSTM/testing_sequence_in.npy'
 testing_out_file = 'data/data4LSTM/testing_sequence_out.npy'
@@ -70,7 +77,41 @@ testing_loss = validate_epoch(lstm_model=lstm_model, device=device, dataloader_i
 print(f'The MSE loss for the testing dataset is {testing_loss}.')
 
 # PART 5: show the difference and comparison of the specified data
+# use the lstm model to get result
+predicted_lstm_output = predict_lstm(lstm_model=lstm_model, device=device, dataloader_in=testing_in_dataloader)
+predicted_lstm_output = predicted_lstm_output.cpu().numpy()
 
+# use the decoder models to get results
+lstm_cae_PLIF, lstm_cae_PIV_x, lstm_cae_PIV_y, lstm_cae_PIV_z = \
+    decode_results(decoder_PLIF, decoder_PIV_x, decoder_PIV_y, decoder_PIV_z,
+                   predicted_lstm_output[specified_seq, :, :],
+                   features=features, batch_size=batch_size, device=device)
+
+cae_PLIF, cae_PIV_x, cae_PIV_y, cae_PIV_z = \
+    decode_results(decoder_PLIF, decoder_PIV_x, decoder_PIV_y, decoder_PIV_z,
+                   testing_out_data[specified_seq, :, :],
+                   features=features, batch_size=batch_size, device=device)
+
+difference_PLIF = lstm_cae_PLIF - cae_PLIF
+difference_PIV_x = lstm_cae_PIV_x - cae_PIV_x
+difference_PIV_y = lstm_cae_PIV_y - cae_PIV_y
+difference_PIV_z = lstm_cae_PIV_z - cae_PIV_z
+
+# visualise the comparison
+show_comparison(original_data=cae_PLIF[specified_image, :, :], prediction_data=lstm_cae_PLIF[specified_image, :, :],
+                original_title='lstm_cae_PLIF', prediction_title='cae_PLIF', vmin=0.0, vmax=1.0)
+
+show_comparison(original_data=cae_PIV_x[specified_image, :, :], prediction_data=lstm_cae_PIV_x[specified_image, :, :],
+                original_title='lstm_cae_PIV_x', prediction_title='cae_PIV_x', vmin=0.0, vmax=1.0)
+show_comparison(original_data=cae_PIV_y[specified_image, :, :], prediction_data=lstm_cae_PIV_y[specified_image, :, :],
+                original_title='lstm_cae_PIV_y', prediction_title='cae_PIV_y', vmin=0.0, vmax=1.0)
+show_comparison(original_data=cae_PIV_z[specified_image, :, :], prediction_data=lstm_cae_PIV_z[specified_image, :, :],
+                original_title='lstm_cae_PIV_z', prediction_title='cae_PIV_z', vmin=0.0, vmax=1.0)
+
+show_difference(image_data=difference_PLIF[specified_image, :, :], title='difference_PLIF', vmin=0.0, vmax=1.0)
+show_difference(image_data=difference_PIV_x[specified_image, :, :], title='difference_PIV_x', vmin=0.0, vmax=1.0)
+show_difference(image_data=difference_PIV_y[specified_image, :, :], title='difference_PIV_y', vmin=0.0, vmax=1.0)
+show_difference(image_data=difference_PIV_z[specified_image, :, :], title='difference_PIV_z', vmin=0.0, vmax=1.0)
 
 """
 SECTION 2: show the predicted results influenced by the LSTM and CAE models simultaneously.
