@@ -134,7 +134,7 @@ NOTE: you can comment this part after using.
 """
 Section 2: split the dataset into training, validation and testing datasets (8:1:1).
 NOTE: 
-1. the training dataset should be shuffled, others should not.
+1. the dataset should be shuffled in advance, and then split it.
 2. the PLIF and PIV datasets should be shuffled with the same shuffled index.
 """
 
@@ -148,8 +148,19 @@ for i in range(file_num):
     PIV_y_data = np.load(f'data/unshuffled_numpy_data/IA_PIV_y_{i + 1}.npy')
     PIV_z_data = np.load(f'data/unshuffled_numpy_data/IA_PIV_z_{i + 1}.npy')
 
-    # 3. split the dataset with the ratio of (8:1:1)
+    # 3. shuffle the dataset in advance
+    # define the shuffled index
     data_num = PLIF_data.shape[0]
+    index_array = np.arange(data_num)
+    np.random.shuffle(index_array)
+
+    # shuffle the PLIF and PIV-x,y,z dataset via the shuffled index
+    PLIF_data = np.take(PLIF_data, index_array, axis=0)
+    PIV_x_data = np.take(PIV_x_data, index_array, axis=0)
+    PIV_y_data = np.take(PIV_y_data, index_array, axis=0)
+    PIV_z_data = np.take(PIV_z_data, index_array, axis=0)
+
+    # 4. split the dataset with the ratio of (8:1:1)
     split_points = [int(np.floor(data_num * 0.8)), int(np.floor(data_num * 0.9))]
 
     PLIF_data_split = np.split(PLIF_data, split_points, axis=0)
@@ -173,66 +184,57 @@ for i in range(file_num):
     validation_PIV_z_data = PIV_z_data_split[1]
     testing_PIV_z_data = PIV_z_data_split[2]
 
-    # # 4. shuffle the training datasets and save
-    # training_num = training_PLIF_data.shape[0]
-    # index_array = np.arange(training_num)
-    # np.random.shuffle(index_array)
-    #
-    # training_PLIF_data = np.take(training_PLIF_data, index_array, axis=0)
-    # training_PIV_x_data = np.take(training_PIV_x_data, index_array, axis=0)
-    # training_PIV_y_data = np.take(training_PIV_y_data, index_array, axis=0)
-    # training_PIV_z_data = np.take(training_PIV_z_data, index_array, axis=0)
-    #
-    # training_PLIF_data = np.expand_dims(training_PLIF_data, axis=1)
-    # training_PIV_x_data = np.expand_dims(training_PIV_x_data, axis=1)
-    # training_PIV_y_data = np.expand_dims(training_PIV_y_data, axis=1)
-    # training_PIV_z_data = np.expand_dims(training_PIV_z_data, axis=1)
-    #
-    # training_PLIF_dataset = MyDataset(training_PLIF_data)
-    # training_PIV_x_dataset = MyDataset(training_PIV_x_data)
-    # training_PIV_y_dataset = MyDataset(training_PIV_y_data)
-    # training_PIV_z_dataset = MyDataset(training_PIV_z_data)
-    #
-    # with open(f'data/data4models/training_PLIF_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(training_PLIF_dataset, file)
-    #
-    # with open(f'data/data4models/training_PIV_x_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(training_PIV_x_dataset, file)
-    #
-    # with open(f'data/data4models/training_PIV_y_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(training_PIV_y_dataset, file)
-    #
-    # with open(f'data/data4models/training_PIV_z_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(training_PIV_z_dataset, file)
+    # 5. reshape and save the training dataset
+    training_PLIF_data = np.expand_dims(training_PLIF_data, axis=1)
+    training_PIV_x_data = np.expand_dims(training_PIV_x_data, axis=1)
+    training_PIV_y_data = np.expand_dims(training_PIV_y_data, axis=1)
+    training_PIV_z_data = np.expand_dims(training_PIV_z_data, axis=1)
 
-    # # 5. reshape and save the validation datasets
-    # validation_PLIF_data = np.expand_dims(validation_PLIF_data, axis=1)
-    # validation_PIV_x_data = np.expand_dims(validation_PIV_x_data, axis=1)
-    # validation_PIV_y_data = np.expand_dims(validation_PIV_y_data, axis=1)
-    # validation_PIV_z_data = np.expand_dims(validation_PIV_z_data, axis=1)
-    #
-    # validation_PLIF_dataset = MyDataset(validation_PLIF_data)
-    # validation_PIV_x_dataset = MyDataset(validation_PIV_x_data)
-    # validation_PIV_y_dataset = MyDataset(validation_PIV_y_data)
-    # validation_PIV_z_dataset = MyDataset(validation_PIV_z_data)
-    #
-    # with open(f'data/data4models/validation_PLIF_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(validation_PLIF_dataset, file)
-    #
-    # with open(f'data/data4models/validation_PIV_x_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(validation_PIV_x_dataset, file)
-    #
-    # with open(f'data/data4models/validation_PIV_y_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(validation_PIV_y_dataset, file)
-    #
-    # with open(f'data/data4models/validation_PIV_z_dataset{i + 1}.pkl', 'wb') as file:
-    #     pickle.dump(validation_PIV_z_dataset, file)
+    training_PLIF_dataset = MyDataset(training_PLIF_data)
+    training_PIV_x_dataset = MyDataset(training_PIV_x_data)
+    training_PIV_y_dataset = MyDataset(training_PIV_y_data)
+    training_PIV_z_dataset = MyDataset(training_PIV_z_data)
+
+    with open(f'data/data4CAE/training_PLIF_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(training_PLIF_dataset, file)
+
+    with open(f'data/data4CAE/training_PIV_x_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(training_PIV_x_dataset, file)
+
+    with open(f'data/data4CAE/training_PIV_y_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(training_PIV_y_dataset, file)
+
+    with open(f'data/data4CAE/training_PIV_z_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(training_PIV_z_dataset, file)
+
+    # 5. reshape and save the validation datasets
+    validation_PLIF_data = np.expand_dims(validation_PLIF_data, axis=1)
+    validation_PIV_x_data = np.expand_dims(validation_PIV_x_data, axis=1)
+    validation_PIV_y_data = np.expand_dims(validation_PIV_y_data, axis=1)
+    validation_PIV_z_data = np.expand_dims(validation_PIV_z_data, axis=1)
+
+    validation_PLIF_dataset = MyDataset(validation_PLIF_data)
+    validation_PIV_x_dataset = MyDataset(validation_PIV_x_data)
+    validation_PIV_y_dataset = MyDataset(validation_PIV_y_data)
+    validation_PIV_z_dataset = MyDataset(validation_PIV_z_data)
+
+    with open(f'data/data4CAE/validation_PLIF_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(validation_PLIF_dataset, file)
+
+    with open(f'data/data4CAE/validation_PIV_x_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(validation_PIV_x_dataset, file)
+
+    with open(f'data/data4CAE/validation_PIV_y_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(validation_PIV_y_dataset, file)
+
+    with open(f'data/data4CAE/validation_PIV_z_dataset{i + 1}.pkl', 'wb') as file:
+        pickle.dump(validation_PIV_z_dataset, file)
 
     # 6. save the testing numpy array, reshape and save the testing datasets
-    np.save(f'data/data4models/testing_PLIF_data{i + 1}.npy', testing_PLIF_data)
-    np.save(f'data/data4models/testing_PIV_x_data{i + 1}.npy', testing_PIV_x_data)
-    np.save(f'data/data4models/testing_PIV_y_data{i + 1}.npy', testing_PIV_y_data)
-    np.save(f'data/data4models/testing_PIV_z_data{i + 1}.npy', testing_PIV_z_data)
+    np.save(f'data/data4CAE/testing_PLIF_data{i + 1}.npy', testing_PLIF_data)
+    np.save(f'data/data4CAE/testing_PIV_x_data{i + 1}.npy', testing_PIV_x_data)
+    np.save(f'data/data4CAE/testing_PIV_y_data{i + 1}.npy', testing_PIV_y_data)
+    np.save(f'data/data4CAE/testing_PIV_z_data{i + 1}.npy', testing_PIV_z_data)
 
     testing_PLIF_data = np.expand_dims(testing_PLIF_data, axis=1)
     testing_PIV_x_data = np.expand_dims(testing_PIV_x_data, axis=1)
@@ -244,16 +246,16 @@ for i in range(file_num):
     testing_PIV_y_dataset = MyDataset(testing_PIV_y_data)
     testing_PIV_z_dataset = MyDataset(testing_PIV_z_data)
 
-    with open(f'data/data4models/testing_PLIF_dataset{i + 1}.pkl', 'wb') as file:
+    with open(f'data/data4CAE/testing_PLIF_dataset{i + 1}.pkl', 'wb') as file:
         pickle.dump(testing_PLIF_dataset, file)
 
-    with open(f'data/data4models/testing_PIV_x_dataset{i + 1}.pkl', 'wb') as file:
+    with open(f'data/data4CAE/testing_PIV_x_dataset{i + 1}.pkl', 'wb') as file:
         pickle.dump(testing_PIV_x_dataset, file)
 
-    with open(f'data/data4models/testing_PIV_y_dataset{i + 1}.pkl', 'wb') as file:
+    with open(f'data/data4CAE/testing_PIV_y_dataset{i + 1}.pkl', 'wb') as file:
         pickle.dump(testing_PIV_y_dataset, file)
 
-    with open(f'data/data4models/testing_PIV_z_dataset{i + 1}.pkl', 'wb') as file:
+    with open(f'data/data4CAE/testing_PIV_z_dataset{i + 1}.pkl', 'wb') as file:
         pickle.dump(testing_PIV_z_dataset, file)
 
 
