@@ -23,7 +23,7 @@ print(f"Selected device: {device}")
 
 # 1.2. define the parameters for training the model
 batch_size = 100
-EPOCHS = 1000
+EPOCHS = 10
 lr = 0.0001
 if_existing = False  # a flag recording if there is a set of existing model
 img_scale = 71
@@ -32,11 +32,11 @@ dataset_num = 2
 model_title = 'PIV_x'
 
 # 1.3. define the file list
-training_files = ['data/data4models/training_PIV_x_dataset1.pkl',
-                  'data/data4models/training_PIV_x_dataset2.pkl']
+training_files = ['data/data4CAE/training_PIV_x_dataset1.pkl',
+                  'data/data4CAE/training_PIV_x_dataset2.pkl']
 
-validation_files = ['data/data4models/validation_PIV_x_dataset1.pkl',
-                    'data/data4models/validation_PIV_x_dataset2.pkl']
+validation_files = ['data/data4CAE/validation_PIV_x_dataset1.pkl',
+                    'data/data4CAE/validation_PIV_x_dataset2.pkl']
 
 # PART 2: create the dataloader for training
 training_dataloader_list = []
@@ -63,8 +63,8 @@ for i in range(dataset_num):
 encoder = Encoder(img_scale)
 
 # check if there is an existing model
-if os.path.exists(f'./model/encoder_{model_title}.pt'):
-    encoder = torch.load(f'./model/encoder_{model_title}.pt')
+if os.path.exists(f'./model/CAE_models/encoder_{model_title}.pt'):
+    encoder = torch.load(f'./model/CAE_models/encoder_{model_title}.pt')
 
     # set if_existing flag
     if_existing = True
@@ -81,7 +81,7 @@ decoder = Decoder(img_scale)
 
 # check if there is an existing model
 if if_existing:
-    decoder = torch.load(f'./model/decoder_{model_title}.pt')
+    decoder = torch.load(f'./model/CAE_models/decoder_{model_title}.pt')
     print("Load the existing Decoder model, then continue training.")
 else:
     print("No existing Decoder model, so create a new one.")
@@ -102,10 +102,10 @@ best_loss = 10.0
 
 if if_existing:
     train_loss_records = \
-        np.append(train_loss_records, np.load(f'./result/train_loss_records_{model_title}.npy'))
+        np.append(train_loss_records, np.load(f'./result/CAE_results/train_loss_records_{model_title}.npy'))
 
     validation_loss_records = \
-        np.append(validation_loss_records, np.load(f'./result/validation_loss_records_{model_title}.npy'))
+        np.append(validation_loss_records, np.load(f'./result/CAE_results/validation_loss_records_{model_title}.npy'))
 
     best_loss = validation_loss_records.min()
     print(f"Load the existing loss records, and current best loss is {best_loss}.")
@@ -158,12 +158,12 @@ for epoch in range(EPOCHS):
 
     if validation_loss < best_loss:
         best_loss = validation_loss
-        torch.save(encoder, f'./model/encoder_{model_title}.pt')
-        torch.save(decoder, f'./model/decoder_{model_title}.pt')
+        torch.save(encoder, f'./model/CAE_models/encoder_{model_title}.pt')
+        torch.save(decoder, f'./model/CAE_models/decoder_{model_title}.pt')
 
 # save loss records of training and validation process
-np.save(f'./result/train_loss_records_{model_title}.npy', train_loss_records)
-np.save(f'./result/validation_loss_records_{model_title}.npy', validation_loss_records)
+np.save(f'./result/CAE_results/train_loss_records_{model_title}.npy', train_loss_records)
+np.save(f'./result/CAE_results/validation_loss_records_{model_title}.npy', validation_loss_records)
 
 loss_records = {
     'train_loss_records': train_loss_records,
