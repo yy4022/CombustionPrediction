@@ -46,7 +46,7 @@ class LSTM(nn.Module):
         self.lstm_encoder = nn.LSTM(self.input_size, self.hidden_size, self.num_layers, batch_first=self.batch_first)
         self.activation_fun1 = nn.ReLU()
 
-        self.lstm_decoder = nn.LSTM(self.hidden_size, 64, self.num_layers, batch_first=self.batch_first)
+        self.lstm_decoder = nn.LSTM(self.hidden_size, 128, self.num_layers, batch_first=self.batch_first)
         self.activation_fun2 = nn.ReLU()
 
         self.linear = nn.Linear(self.hidden_size, self.output_size)
@@ -63,22 +63,22 @@ class LSTM(nn.Module):
         c_0 = torch.randn(1, batch_size, self.hidden_size).to(self.device)
         h_1 = torch.randn(1, batch_size, self.hidden_size).to(self.device)
         c_1 = torch.randn(1, batch_size, self.hidden_size).to(self.device)
-        # output(batch_size, seq_len, num_directions * hidden_size) -- input(14, 20, 20)
+        # output(batch_size, seq_len, num_directions * hidden_size)
 
         # only retain the last item of the encoded_output sequence (the last timestep)
-        encoded_output, _ = self.lstm_encoder(input_seq, (h_0, c_0))  # output(14, 20, 64)
+        encoded_output, _ = self.lstm_encoder(input_seq, (h_0, c_0))
         encoded_output = self.activation_fun1(encoded_output)
-        encoded_output = encoded_output[:, -1, :]  # output(14, 64)
+        encoded_output = encoded_output[:, -1, :]
 
         # repeat the last item 'seq_len' times (i.e. corresponds to RepeatVector module)
-        repeated_output = encoded_output.unsqueeze(1).expand(-1, seq_len, -1)  # output(14, 20, 64)
+        repeated_output = encoded_output.unsqueeze(1).expand(-1, seq_len, -1)
 
         # get the decoded_output by using the lstm_decoder
         decoded_output, _ = self.lstm_decoder(repeated_output, (h_1, c_1))
-        decoded_output = self.activation_fun2(decoded_output)  # output(14, 20, 64)
+        decoded_output = self.activation_fun2(decoded_output)
 
         # the fully connected layer
-        prediction_output = self.linear(decoded_output)  # (14, 200)
+        prediction_output = self.linear(decoded_output)
         prediction_output = self.activation_fun3(prediction_output)
 
         # the TimeDistributed layer

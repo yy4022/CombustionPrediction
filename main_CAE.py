@@ -91,7 +91,7 @@ input_shape = (latent_features,)
 summary(decoder, input_shape)
 
 # 3. create two numpy arrays for recording the loss,
-#   and set the best (validation) loss for updating the mode
+#   and set the best (validation) loss for updating the model
 train_loss_records = []
 validation_loss_records = []
 
